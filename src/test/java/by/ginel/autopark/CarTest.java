@@ -37,4 +37,35 @@ public class CarTest {
 
         Assert.assertFalse(car.isAlive());
     }
+
+    @Test
+    public void blockTest() throws Exception {
+        Parkinglot parkinglot = Mockito.mock(Parkinglot.class);
+        Semaphore semaphore = new Semaphore(1);
+        Car car = new Car(1, parkinglot, new Exchanger<Ticket>());
+        Car car1 = new Car(2, parkinglot, new Exchanger<Ticket>());
+
+        Ticket ticket = new Ticket();
+        ticket.setSpotNum(1);
+        ticket.setDateOfExp(new Date(new Date().getTime()));
+        Mockito.when(parkinglot.checkIn()).thenAnswer(new Answer() {
+            @Override
+            public Ticket answer(InvocationOnMock invocationOnMock) throws Throwable {
+                semaphore.acquire();
+                return ticket;
+            }
+        });
+        Mockito.when(parkinglot.checkOut(ticket)).thenAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+                semaphore.release();
+                return null;
+            }
+        });
+        car.start();
+        sleep(10);
+        car1.start();
+        sleep(20);
+        Assert.assertTrue(car1.getState() == Thread.State.WAITING);
+    }
 }

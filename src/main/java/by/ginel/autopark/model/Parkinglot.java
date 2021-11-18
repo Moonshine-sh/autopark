@@ -41,8 +41,9 @@ public class Parkinglot {
             return null;
     }
 
-    public void checkOut(Ticket ticket) {
+    public Void checkOut(Ticket ticket) {
         spots.stream().filter(spot -> spot.getSpotNum()==ticket.getSpotNum()).findFirst().get().release();
+        return null;
     }
 
     public void extendTime(Ticket ticket) {
